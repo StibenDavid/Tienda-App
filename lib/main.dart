@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shopping_list_app/services/firebase_services.dart';
+import 'package:shopping_list_app/services/firebase_serviceList.dart';
+import 'package:shopping_list_app/services/firebase_serviceSite.dart';
+import 'package:shopping_list_app/services/firebase_servicesItem.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -18,27 +20,29 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Material App',
-      home: Home(), // Scaffold
-    ); // MaterialApp
+      home: Home(),
+    );
   }
 }
 
 class Home extends StatefulWidget {
-  const Home({
-    Key? key,
-  }) : super(key: key);
+  const Home({Key? key}) : super(key: key);
 
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  late Future<List<Map<String, dynamic>>> _future; // Ajuste del tipo de la variable _future
+  late Future<List<List<Map<String, dynamic>>>> _future;
 
   @override
   void initState() {
     super.initState();
-    _future = getShoppingItem().then((value) => value.cast<Map<String, dynamic>>().toList()); 
+    _future = Future.wait([
+      getShoppingItem().then((value) => value.cast<Map<String, dynamic>>().toList()),
+      getShoppingSite().then((value) => value.cast<Map<String, dynamic>>().toList()),
+      getShoppingList().then((value) => value.cast<Map<String, dynamic>>().toList()),
+    ]);
   }
 
   @override
@@ -47,7 +51,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: const Text('Material App Bar'),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      body: FutureBuilder<List<List<Map<String, dynamic>>>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -59,21 +63,76 @@ class _HomeState extends State<Home> {
               child: Text('Error: ${snapshot.error}'),
             );
           } else {
-            return ListView.builder(
-              itemCount: snapshot.data?.length ?? 0,
-              itemBuilder: (context, index) {
-                final item = snapshot.data![index];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Id: ${item['Id']}'),
-                    Text('ListId: ${item['listId']}'),
-                    Text('Nombre: ${item['nombre']}'),
-                    Text('SiteId: ${item['siteId']}'),
-                    const Divider(),
-                  ],
-                );
-              },
+            final items = snapshot.data?[0] ?? [];
+            final sites = snapshot.data?[1] ?? [];
+            final lists = snapshot.data?[2] ?? [];
+
+            return ListView(
+              children: [
+                const Text(
+                  'Items',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: items.length,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Item Id: ${item['Id']}'),
+                        Text('ListId: ${item['listId']}'),
+                        Text('Nombre: ${item['nombre']}'),
+                        Text('SiteId: ${item['siteId']}'),
+                        const Divider(),
+                      ],
+                    );
+                  },
+                ),
+                const Text(
+                  'Sites',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: sites.length,
+                  itemBuilder: (context, index) {
+                    final site = sites[index];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Site Id: ${site['id']}'),
+                        Text('Date: ${site['date']}'),
+                        Text('Name: ${site['name']}'),
+                        const Divider(),
+                      ],
+                    );
+                  },
+                ),
+                const Text(
+                  'Lists',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: lists.length,
+                  itemBuilder: (context, index) {
+                    final list = lists[index];
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('List Id: ${list['id']}'),
+                        Text('Date: ${list['date']}'),
+                        const Divider(),
+                      ],
+                    );
+                  },
+                ),
+              ],
             );
           }
         },

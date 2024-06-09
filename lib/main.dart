@@ -4,6 +4,10 @@ import 'package:shopping_list_app/services/firebase_serviceList.dart';
 import 'package:shopping_list_app/services/firebase_serviceSite.dart';
 import 'package:shopping_list_app/services/firebase_servicesItem.dart';
 import 'firebase_options.dart';
+import 'package:shopping_list_app/components/item.dart';
+import 'package:shopping_list_app/components/list.dart';
+import 'package:shopping_list_app/components/site.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,69 +73,9 @@ class _HomeState extends State<Home> {
 
             return ListView(
               children: [
-                const Text(
-                  'Items',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Item Id: ${item['Id']}'),
-                        Text('ListId: ${item['listId']}'),
-                        Text('Nombre: ${item['nombre']}'),
-                        Text('SiteId: ${item['siteId']}'),
-                        const Divider(),
-                      ],
-                    );
-                  },
-                ),
-                const Text(
-                  'Sites',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: sites.length,
-                  itemBuilder: (context, index) {
-                    final site = sites[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Site Id: ${site['id']}'),
-                        Text('Date: ${site['date']}'),
-                        Text('Name: ${site['name']}'),
-                        const Divider(),
-                      ],
-                    );
-                  },
-                ),
-                const Text(
-                  'Lists',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: lists.length,
-                  itemBuilder: (context, index) {
-                    final list = lists[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('List Id: ${list['id']}'),
-                        Text('Date: ${list['date']}'),
-                        const Divider(),
-                      ],
-                    );
-                  },
-                ),
+                ItemList(items: items),
+                SiteList(sites: sites),
+                ListList(lists: lists),
               ],
             );
           }

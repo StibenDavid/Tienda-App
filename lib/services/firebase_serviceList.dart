@@ -19,6 +19,18 @@ Future<List<Map<String, dynamic>>> getShoppingList() async {
 
   return shoppingLists;
 }
+Future<String> getListName(String listId) async {
+  try {
+    DocumentSnapshot doc = await db.collection('ShoppingList').doc(listId).get();
+    if (doc.exists) {
+      return doc['name'];
+    } else {
+      throw Exception('List not found');
+    }
+  } catch (e) {
+    throw Exception('Error fetching list name: $e');
+  }
+}
 
 Future<void> addList(String date) async {
   await db.collection("ShoppingList").add({

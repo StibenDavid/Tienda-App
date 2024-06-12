@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shopping_list_app/pages/add_item.dart';
+import 'package:shopping_list_app/pages/add_site.dart';
 import 'package:shopping_list_app/pages/edit_item.dart';
+import 'package:shopping_list_app/pages/edit_site.dart';
 import 'package:shopping_list_app/pages/home_page.dart';
 import 'firebase_options.dart';
 
@@ -24,8 +26,10 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const Home(),
-        '/add': (context) => const Item(),
-        '/edit': (context) => const EditItem()
+        '/addItem': (context) => const Item(),
+        '/editItem': (context) => const EditItem(),
+        '/addSite': (context) => const AddSite(),
+        '/editSite': (context) => const EditSite(),
       },
     );
   }

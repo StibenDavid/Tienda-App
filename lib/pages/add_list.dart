@@ -1,76 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_list_app/services/firebase_serviceSite.dart'; // Importa tu servicio de Firebase
+import 'package:shopping_list_app/services/firebase_serviceList.dart';
 
-class AddSite extends StatefulWidget {
-  const AddSite({Key? key}) : super(key: key);
+class AddList extends StatefulWidget {
+  const AddList({super.key});
 
   @override
-  State<AddSite> createState() => _AddSiteState();
+  _AddListState createState() => _AddListState();
 }
 
-class _AddSiteState extends State<AddSite> {
+class _AddListState extends State<AddList> {
   final TextEditingController idController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
   @override
   void dispose() {
     idController.dispose();
-    nameController.dispose();
     dateController.dispose();
     super.dispose();
   }
 
-  void guardarSite() async {
-    // Obtener los valores de los controladores
-    final String name = nameController.text;
+  void _saveList() async {
     final String date = dateController.text;
 
-    // Llamar al método addSite para guardar el nuevo sitio
-    await addSite(name, date);
+    await addList(date);
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sitio guardado con éxito')),
+      const SnackBar(content: Text('Lista guardada con éxito')),
     );
 
     idController.clear();
-    nameController.clear();
     dateController.clear();
+
+    Navigator.of(context).pop(); // Cerrar el modal después de guardar
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Agregar Sitio"),
+        title: const Text("Agregar Lista"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextField(
               controller: idController,
               decoration: const InputDecoration(
-                labelText: 'Ingrese el ID del sitio',
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Ingrese el nombre del sitio',
+                labelText: 'ID de la lista',
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               controller: dateController,
               decoration: const InputDecoration(
-                labelText: 'Ingrese la fecha del sitio',
+                labelText: 'Fecha',
               ),
             ),
             const SizedBox(height: 24.0),
             ElevatedButton(
-              onPressed: guardarSite,
+              onPressed: _saveList,
               child: const Text("Guardar"),
             ),
           ],

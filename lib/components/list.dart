@@ -30,7 +30,7 @@ class ItemList extends StatelessWidget {
             title: Text(item['name'] ?? 'Sin nombre'),
             subtitle: Text('List ID: ${item['listId']}, Site ID: ${item['siteId']}'),
             onTap: () {
-              Navigator.pushNamed(context, '/edit', arguments: {
+              Navigator.pushNamed(context, '/editItem', arguments: {
                 "listId": item['listId'] ?? '',
                 "name": item['name'] ?? '',
                 "site": item['siteId'] ?? '',

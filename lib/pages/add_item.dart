@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list_app/services/firebase_servicesItem.dart'; // Importa tu servicio de Firebase
 
 class Item extends StatefulWidget {
   const Item({Key? key}) : super(key: key);
@@ -20,6 +21,24 @@ class _ItemState extends State<Item> {
     super.dispose();
   }
 
+  void guardarItem() async {
+    // Obtener los valores de los controladores
+    final String lista = listController.text;
+    final String nombre = nameController.text;
+    final String sitio = siteController.text;
+
+    // Llamar al método addItem para guardar el nuevo ítem
+    await addItem(lista, nombre, sitio);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ítem guardado con éxito')),
+    );
+
+    listController.clear();
+    nameController.clear();
+    siteController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,29 +52,26 @@ class _ItemState extends State<Item> {
             TextField(
               controller: listController,
               decoration: const InputDecoration(
-                labelText: 'Ingrese la lista a la que pertenece el item',
+                labelText: 'Ingrese la lista a la que pertenece el ítem',
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(
-                labelText: 'Ingrese el nombre del nuevo item',
+                labelText: 'Ingrese el nombre del nuevo ítem',
               ),
             ),
             const SizedBox(height: 16.0),
             TextField(
               controller: siteController,
               decoration: const InputDecoration(
-                labelText: 'Ingrese el sitio al que pertenece el nuevo item',
+                labelText: 'Ingrese el sitio al que pertenece el nuevo ítem',
               ),
             ),
             const SizedBox(height: 24.0),
             ElevatedButton(
-              onPressed: () {
-                // Aquí agregarás la lógica para guardar el nuevo item
-                // usando los valores de listController, nameController, y siteController
-              },
+              onPressed: guardarItem,
               child: const Text("Guardar"),
             ),
           ],

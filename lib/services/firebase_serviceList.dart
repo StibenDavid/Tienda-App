@@ -19,11 +19,12 @@ Future<List<Map<String, dynamic>>> getShoppingList() async {
 
   return shoppingLists;
 }
+
 Future<String> getListName(String listId) async {
   try {
     DocumentSnapshot doc = await db.collection('ShoppingList').doc(listId).get();
     if (doc.exists) {
-      return doc['name'];
+      return doc['date']; // Cambiado a 'date' en lugar de 'name' para coincidir con los datos guardados
     } else {
       throw Exception('List not found');
     }

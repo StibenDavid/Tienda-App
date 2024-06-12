@@ -33,12 +33,19 @@ class _EditItemState extends State<EditItem> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Item"),
+        title: const Text("Editar Item"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Hero(
+              tag: 'item_${arguments['uid']}', // Asegúrate de que 'uid' sea único para cada ítem
+              child: CircleAvatar(
+                child: Icon(Icons.shopping_cart),
+              ),
+            ),
+            const SizedBox(height: 16.0),
             TextField(
               controller: listController,
               decoration: const InputDecoration(

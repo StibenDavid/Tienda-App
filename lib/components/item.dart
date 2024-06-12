@@ -4,7 +4,11 @@ class ListList extends StatelessWidget {
   final List<Map<String, dynamic>> lists;
   final Function(BuildContext, String) onDelete;
 
-  const ListList({Key? key, required this.lists, required this.onDelete, required Future<void> Function(BuildContext context, String listId, String date) onEdit}) : super(key: key);
+  const ListList({
+    Key? key,
+    required this.lists,
+    required this.onDelete,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +47,23 @@ class ListList extends StatelessWidget {
                     title: Text('List Id: ${list['id']}'),
                     subtitle: Text('Date: ${list['date']}'),
                     onTap: () {
-                      Navigator.pushNamed(context, '/editList', arguments: {
-                        "listId": list['id'] ?? '',
-                        "date": list['date'] ?? '',
+                      // Navegar a la pantalla de edición con los argumentos adecuados
+                      Navigator.pushNamed(
+                        context,
+                        '/editList',
+                        arguments: {
+                          "listId": list['id'] ?? '',
+                          "date": list['date'] ?? '',
+                        },
+                      ).then((value) {
+                        // Manejar la actualización de datos después de la edición
+                        if (value == true) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('List updated')),
+                          );
+                          // Aquí puedes llamar a una función para actualizar los datos de la lista en Home
+                          // Por ejemplo, puedes hacer una llamada a la función _fetchData para actualizar _future
+                        }
                       });
                     },
                   ),

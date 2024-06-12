@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_list_app/pages/edit_list.dart';
+import 'package:shopping_list_app/components/list.dart';
 import 'package:shopping_list_app/services/firebase_serviceList.dart';
 import 'package:shopping_list_app/services/firebase_serviceSite.dart';
 import 'package:shopping_list_app/services/firebase_servicesItem.dart';
 import 'package:shopping_list_app/components/item.dart';
-import 'package:shopping_list_app/components/list.dart';
 import 'package:shopping_list_app/components/site.dart';
-import 'package:shopping_list_app/pages/add_item.dart';
-import 'package:shopping_list_app/pages/add_site.dart';
-import 'package:shopping_list_app/pages/add_list.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -29,75 +25,103 @@ class _HomeState extends State<Home> {
   Future<List<List<Map<String, dynamic>>>> _fetchData() async {
     final itemData = await getShoppingItem();
     final siteData = await getShoppingSite();
-    final listData = await getShoppingList();
     return [
       itemData.cast<Map<String, dynamic>>().toList(),
       siteData.cast<Map<String, dynamic>>().toList(),
-      listData.cast<Map<String, dynamic>>().toList(),
     ];
   }
 
-  Future<void> _confirmDelete(BuildContext context, String id, String collection) async {
-    String itemName = '';
-    try {
-      switch (collection) {
-        case 'items':
-          itemName = await getItemName(id);
-          await deleteItem(id);
-          break;
-        case 'sites':
-          itemName = await getSiteName(id);
-          await deleteSite(id);
-          break;
-        case 'lists':
-          itemName = await getListName(id);
-          await deleteList(id);
-          break;
-        default:
-          throw Exception('Unsupported collection: $collection');
-      }
-
-      setState(() {
-        _future = _fetchData();
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Elemento "$itemName" eliminado correctamente'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al eliminar el elemento: $e'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+  Future<void> _confirmDeleteItem(BuildContext context, String itemId) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to delete this item?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () async {
+                await deleteItem(itemId);
+                setState(() {
+                  _future = Future.wait([
+                    getShoppingItem().then((value) => value.cast<Map<String, dynamic>>().toList()),
+                    getShoppingSite().then((value) => value.cast<Map<String, dynamic>>().toList()),
+                  ]);
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
-  Future<void> _editList(BuildContext context, String listId, String date) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => EditList(listId: listId, initialDate: date)),
+  Future<void> _confirmDeleteSite(BuildContext context, String siteId) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Are you sure you want to delete this site?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () async {
+                await deleteSite(siteId);
+                setState(() {
+                  _future = Future.wait([
+                    getShoppingItem().then((value) => value.cast<Map<String, dynamic>>().toList()),
+                    getShoppingSite().then((value) => value.cast<Map<String, dynamic>>().toList()),
+                  ]);
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
-    setState(() {
-      _future = _fetchData();
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tienda'),
+        title: const Text('Tienda'),
       ),
       body: FutureBuilder<List<List<Map<String, dynamic>>>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           } else if (snapshot.hasError) {
@@ -107,18 +131,31 @@ class _HomeState extends State<Home> {
           } else {
             final items = snapshot.data![0];
             final sites = snapshot.data![1];
-            final lists = snapshot.data![2];
 
-            return ListView(
-              padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-              children: [
-                _buildSectionTitle('Items'),
-                _buildItemList(items),
-                _buildSectionTitle('Sites'),
-                _buildSiteList(sites),
-                _buildSectionTitle('Lists'),
-                _buildListList(lists),
-              ],
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: Colors.grey[200],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: _buildSection('Items', items.isNotEmpty
+                          ? ItemList(items: items, onDelete: _confirmDeleteItem)
+                          : const Text('No hay ítems')),
+                    ),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                      child: _buildSection('Sites', sites.isNotEmpty
+                          ? SiteList(sites: sites, onDelete: _confirmDeleteSite)
+                          : const Text('No hay sitios')),
+                    ),
+                  ],
+                ),
+              ),
             );
           }
         },
@@ -128,100 +165,38 @@ class _HomeState extends State<Home> {
         children: [
           FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => Item()),
-              ).then((_) {
-                setState(() {
-                  _future = _fetchData();
-                });
-              });
+              Navigator.pushNamed(context, '/addItem');
             },
-            tooltip: 'Añadir ítem',
-            child: Icon(Icons.add),
+            tooltip: 'Add Item',
+            child: const Icon(Icons.add),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16.0), // Espacio entre botones flotantes
           FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddSite()),
-              ).then((_) {
-                setState(() {
-                  _future = _fetchData();
-                });
-              });
+              Navigator.pushNamed(context, '/addSite');
             },
-            tooltip: 'Añadir sitio',
-            child: Icon(Icons.add_location),
-          ),
-          SizedBox(height: 16),
-          FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AddList()),
-              ).then((_) {
-                setState(() {
-                  _future = _fetchData();
-                });
-              });
-            },
-            tooltip: 'Añadir lista',
-            child: Icon(Icons.playlist_add),
+            tooltip: 'Add Site',
+            child: const Icon(Icons.add),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSection(String title, Widget content) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      child: Text(
-        title,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8.0),
+          content,
+        ],
       ),
     );
-  }
-
-  Widget _buildItemList(List<Map<String, dynamic>> items) {
-    if (items.isNotEmpty) {
-      return ItemList(
-        items: items,
-        onDelete: (context, itemId) => _confirmDelete(context, itemId, 'items'),
-      );
-    } else {
-      return ListTile(
-        title: Text('No hay ítems'),
-      );
-    }
-  }
-
-  Widget _buildSiteList(List<Map<String, dynamic>> sites) {
-    if (sites.isNotEmpty) {
-      return SiteList(
-        sites: sites,
-        onDelete: (context, siteId) => _confirmDelete(context, siteId, 'sites'),
-      );
-    } else {
-      return ListTile(
-        title: Text('No hay sitios'),
-      );
-    }
-  }
-
-  Widget _buildListList(List<Map<String, dynamic>> lists) {
-    if (lists.isNotEmpty) {
-      return ListList(
-        lists: lists,
-        onDelete: (context, listId) => _confirmDelete(context, listId, 'lists'),
-        onEdit: _editList,
-      );
-    } else {
-      return ListTile(
-        title: Text('No hay listas'),
-      );
-    }
   }
 }

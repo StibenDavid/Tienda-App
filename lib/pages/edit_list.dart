@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shopping_list_app/services/firebase_serviceList.dart';
 
 class EditList extends StatefulWidget {
-  final String listId;
-  final String initialDate;
-
-  const EditList({Key? key, required this.listId, required this.initialDate}) : super(key: key);
+  const EditList({Key? key}) : super(key: key);
 
   @override
   _EditListState createState() => _EditListState();
@@ -18,8 +15,8 @@ class _EditListState extends State<EditList> {
   @override
   void initState() {
     super.initState();
-    idController = TextEditingController(text: widget.listId);
-    dateController = TextEditingController(text: widget.initialDate);
+    idController = TextEditingController();
+    dateController = TextEditingController();
   }
 
   @override
@@ -29,10 +26,10 @@ class _EditListState extends State<EditList> {
     super.dispose();
   }
 
-  void _updateList() async {
+  void _updateList(String listId) async {
     final String date = dateController.text;
 
-    await updateList(widget.listId, date);
+    await updateList(listId, date);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Lista actualizada con éxito')),
@@ -43,6 +40,15 @@ class _EditListState extends State<EditList> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener los argumentos de la ruta
+    final Map<String, dynamic>? arguments = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+
+    // Asignar los valores a los controladores si existen en los argumentos
+    if (arguments != null) {
+      idController.text = arguments['listId'] ?? '';
+      dateController.text = arguments['date'] ?? '';
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Editar Lista"),
@@ -54,6 +60,7 @@ class _EditListState extends State<EditList> {
           children: [
             TextField(
               controller: idController,
+              enabled: false, // No permitir editar el ID de la lista
               decoration: const InputDecoration(
                 labelText: 'ID de la lista',
               ),
@@ -62,12 +69,16 @@ class _EditListState extends State<EditList> {
             TextField(
               controller: dateController,
               decoration: const InputDecoration(
-                labelText: 'Fecha',
+                labelText: 'Nueva Fecha',
               ),
             ),
             const SizedBox(height: 24.0),
             ElevatedButton(
-              onPressed: _updateList,
+              onPressed: () {
+                // Obtén el ID de la lista de los controladores
+                final String listId = idController.text;
+                _updateList(listId); // Llama a la función para actualizar la lista
+              },
               child: const Text("Actualizar"),
             ),
           ],

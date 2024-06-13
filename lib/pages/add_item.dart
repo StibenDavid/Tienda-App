@@ -1,49 +1,71 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list_app/services/firebase_servicesItem.dart'; // Importa tu servicio de Firebase
+import 'package:shopping_list_app/services/firebase_serviceSite.dart'; // Importa tu servicio de Firebase
 
-class Item extends StatefulWidget {
-  const Item({Key? key}) : super(key: key);
+class AddItem extends StatefulWidget {
+  const AddItem({Key? key}) : super(key: key);
 
   @override
-  State<Item> createState() => _ItemState();
+  State<AddItem> createState() => _AddItemState();
 }
 
-class _ItemState extends State<Item> {
+class _AddItemState extends State<AddItem> {
   final TextEditingController listController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController siteController = TextEditingController();
+  String? selectedSite;
+
+  List<String> siteNames = []; // Lista para almacenar los nombres de los sitios
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSiteNames(); // Obtener los nombres de los sitios al iniciar la pantalla
+  }
+
+  Future<void> _fetchSiteNames() async {
+    final sites = await getShoppingSite(); // Método para obtener la lista de sitios
+    setState(() {
+      siteNames = sites.map((site) => site['name'] as String).toList();
+    });
+  }
 
   @override
   void dispose() {
     listController.dispose();
     nameController.dispose();
-    siteController.dispose();
     super.dispose();
   }
 
   void guardarItem() async {
-    // Obtener los valores de los controladores
     final String lista = listController.text;
     final String nombre = nameController.text;
-    final String sitio = siteController.text;
+    final String sitio = selectedSite ?? ''; // Obtener el sitio seleccionado
 
-    // Llamar al método addItem para guardar el nuevo ítem
-    await addItem(lista, nombre, sitio);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ítem guardado con éxito')),
-    );
+    // Validar que el sitio seleccionado esté en la lista de nombres de sitios
+    if (siteNames.contains(sitio)) {
+      await addItem(lista, nombre, sitio);
 
-    listController.clear();
-    nameController.clear();
-    siteController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ítem guardado con éxito')),
+      );
+
+      listController.clear();
+      nameController.clear();
+      setState(() {
+        selectedSite = null; // Limpiar la selección del sitio después de guardar
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor elija un sitio válido')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Item"),
+        title: const Text("Agregar Ítem"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -63,10 +85,21 @@ class _ItemState extends State<Item> {
               ),
             ),
             const SizedBox(height: 16.0),
-            TextField(
-              controller: siteController,
+            DropdownButtonFormField<String>(
+              value: selectedSite,
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedSite = newValue;
+                });
+              },
+              items: siteNames.map((String siteName) {
+                return DropdownMenuItem<String>(
+                  value: siteName,
+                  child: Text(siteName),
+                );
+              }).toList(),
               decoration: const InputDecoration(
-                labelText: 'Ingrese el sitio al que pertenece el nuevo ítem',
+                labelText: 'Seleccione el sitio del ítem',
               ),
             ),
             const SizedBox(height: 24.0),

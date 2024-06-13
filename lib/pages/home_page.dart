@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shopping_list_app/components/list.dart';
 import 'package:shopping_list_app/services/firebase_serviceList.dart';
 import 'package:shopping_list_app/services/firebase_serviceSite.dart';
-import 'package:shopping_list_app/services/firebase_servicesItem.dart';
 import 'package:shopping_list_app/components/item.dart';
 import 'package:shopping_list_app/components/site.dart';
+import 'package:shopping_list_app/services/firebase_servicesItem.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -115,7 +115,8 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tienda'),
+        title: const Text('Mi Lista de Compras'),
+        backgroundColor: Colors.teal,
       ),
       body: FutureBuilder<List<List<Map<String, dynamic>>>>(
         future: _future,
@@ -136,20 +137,28 @@ class _HomeState extends State<Home> {
               padding: const EdgeInsets.all(16.0),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10.0),
+                  borderRadius: BorderRadius.circular(12.0),
                   color: Colors.grey[200],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.3),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: _buildSection('Items', items.isNotEmpty
+                      child: _buildSection('Productos', items.isNotEmpty
                           ? ItemList(items: items, onDelete: _confirmDeleteItem)
                           : const Text('No hay ítems')),
                     ),
                     const SizedBox(width: 16.0),
                     Expanded(
-                      child: _buildSection('Sites', sites.isNotEmpty
+                      child: _buildSection('Sitios de compra', sites.isNotEmpty
                           ? SiteList(sites: sites, onDelete: _confirmDeleteSite)
                           : const Text('No hay sitios')),
                     ),
@@ -167,16 +176,18 @@ class _HomeState extends State<Home> {
             onPressed: () {
               Navigator.pushNamed(context, '/addItem');
             },
-            tooltip: 'Add Item',
-            child: const Icon(Icons.add),
+            tooltip: 'Agregar Item',
+            backgroundColor: Colors.teal,
+            child: const Icon(Icons.add_business_rounded),
           ),
           const SizedBox(height: 16.0), // Espacio entre botones flotantes
           FloatingActionButton(
             onPressed: () {
               Navigator.pushNamed(context, '/addSite');
             },
-            tooltip: 'Add Site',
-            child: const Icon(Icons.add),
+            tooltip: 'Agregar Sitio',
+            backgroundColor: Colors.teal,
+            child: const Icon(Icons.luggage_rounded),
           ),
         ],
       ),
@@ -191,9 +202,13 @@ class _HomeState extends State<Home> {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.teal,
+            ),
           ),
-          const SizedBox(height: 8.0),
+          const SizedBox(height: 12.0),
           content,
         ],
       ),

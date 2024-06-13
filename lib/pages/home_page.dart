@@ -238,7 +238,7 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.only(bottom: 16.0), // Padding abajo
             child: FloatingActionButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/addItem');
+                _navigateToAddItem(context);
               },
               tooltip: 'Agregar Item',
               backgroundColor: Colors.teal,
@@ -249,7 +249,7 @@ class _HomeState extends State<Home> {
             padding: const EdgeInsets.only(bottom: 16.0), // Padding abajo
             child: FloatingActionButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/addSite');
+                _navigateToAddSite(context);
               },
               tooltip: 'Agregar Sitio',
               backgroundColor: Colors.teal,
@@ -289,4 +289,24 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+
+  void _navigateToAddItem(BuildContext context) async {
+    final result = await Navigator.pushNamed(context, '/addItem');
+    if (result == true) {
+      setState(() {
+        _future = _fetchData();
+      });
+    }
+  }
+
+  void _navigateToAddSite(BuildContext context) async {
+    final result = await Navigator.pushNamed(context, '/addSite');
+    if (result == true) {
+      setState(() {
+        _future = _fetchData();
+      });
+    }
+  }
 }
+
+

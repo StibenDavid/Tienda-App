@@ -24,12 +24,21 @@ class _AddSiteState extends State<AddSite> {
 
   void guardarSite() async {
     if (_formKey.currentState!.validate()) {
-      // Obtener los valores de los controladores
-      final String name = nameController.text;
-      final String date = dateController.text;
+      final String id = idController.text.trim();
+      final String name = nameController.text.trim();
+      final String date = dateController.text.trim();
+
+      // Verificar si el ID ya existe
+      final bool siteExists = await checkSiteExists(id);
+      if (siteExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('El ID del sitio ya existe')),
+        );
+        return;
+      }
 
       // Llamar al método addSite para guardar el nuevo sitio
-      await addSite(date, name); // Ajustado el orden de date y name según la conversación anterior
+      await addSite(name, date);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sitio guardado con éxito')),
@@ -39,6 +48,11 @@ class _AddSiteState extends State<AddSite> {
       nameController.clear();
       dateController.clear();
     }
+  }
+
+  Future<bool> checkSiteExists(String id) async {
+    final sites = await getShoppingSite();
+    return sites.any((site) => site['id'] == id);
   }
 
   @override
@@ -90,6 +104,17 @@ class _AddSiteState extends State<AddSite> {
                   }
                   // Puedes agregar validaciones adicionales para el formato de fecha si es necesario
                   return null;
+                },
+                onTap: () async {
+                  DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (pickedDate != null) {
+                    dateController.text = pickedDate.toString();
+                  }
                 },
               ),
               const SizedBox(height: 24.0),

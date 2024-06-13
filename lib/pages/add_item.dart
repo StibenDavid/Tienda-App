@@ -13,7 +13,6 @@ class _AddItemState extends State<AddItem> {
   final TextEditingController listController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   String? selectedSite;
-
   List<String> siteNames = []; // Lista para almacenar los nombres de los sitios
 
   @override
@@ -70,11 +69,15 @@ class _AddItemState extends State<AddItem> {
       const SnackBar(content: Text('Ítem guardado con éxito')),
     );
 
+    // Limpiar los campos y actualizar el estado para reflejar los cambios
     listController.clear();
     nameController.clear();
     setState(() {
       selectedSite = null;
     });
+
+    // Notificar a la pantalla de inicio para que se actualice la lista de ítems
+    Navigator.pop(context, true);
   }
 
   @override

@@ -48,7 +48,6 @@ class _HomeState extends State<Home> {
     _future = _fetchData();
   }
 
-  // Obtener datos de los servicios (simulados)
   Future<List<List<Map<String, dynamic>>>> _fetchData() async {
     try {
       final itemData = await getShoppingItem();
@@ -112,7 +111,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // Mostrar la lista de items predefinidos en un AlertDialog
   void _showPredefinedItems(BuildContext context) async {
     final siteData = await getShoppingSite();
     final siteNames = siteData.map((site) => site['name'] as String).toList();
@@ -123,7 +121,7 @@ class _HomeState extends State<Home> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Lista de Items Predefinida"),
+          title: const Text("Lista de Items Predefinida"),
           content: Container(
             width: double.maxFinite,
             child: ListView.builder(
@@ -165,7 +163,7 @@ class _HomeState extends State<Home> {
               ),
               child: Text("Cerrar"),
               onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el diálogo
+                Navigator.of(context).pop(); 
               },
             ),
           ],
@@ -211,7 +209,7 @@ class _HomeState extends State<Home> {
                       color: Colors.grey.withOpacity(0.3),
                       spreadRadius: 2,
                       blurRadius: 5,
-                      offset: const Offset(0, 3), // changes position of shadow
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -235,7 +233,7 @@ class _HomeState extends State<Home> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 16.0), // Padding abajo
+            padding: const EdgeInsets.only(bottom: 16.0), 
             child: FloatingActionButton(
               onPressed: () {
                 _navigateToAddItem(context);
@@ -246,7 +244,7 @@ class _HomeState extends State<Home> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 16.0), // Padding abajo
+            padding: const EdgeInsets.only(bottom: 16.0), 
             child: FloatingActionButton(
               onPressed: () {
                 _navigateToAddSite(context);
@@ -277,7 +275,7 @@ class _HomeState extends State<Home> {
         children: [
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.teal,

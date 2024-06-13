@@ -41,24 +41,40 @@ class _AddItemState extends State<AddItem> {
     final String nombre = nameController.text;
     final String sitio = selectedSite ?? ''; // Obtener el sitio seleccionado
 
-    // Validar que el sitio seleccionado esté en la lista de nombres de sitios
-    if (siteNames.contains(sitio)) {
-      await addItem(lista, nombre, sitio);
-
+    // Validar que todos los campos están llenos y el sitio es válido
+    if (lista.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ítem guardado con éxito')),
+        const SnackBar(content: Text('Por favor ingrese la lista')),
       );
+      return;
+    }
 
-      listController.clear();
-      nameController.clear();
-      setState(() {
-        selectedSite = null; // Limpiar la selección del sitio después de guardar
-      });
-    } else {
+    if (nombre.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingrese el nombre del ítem')),
+      );
+      return;
+    }
+
+    if (!siteNames.contains(sitio)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor elija un sitio válido')),
       );
+      return;
     }
+
+    // Si todas las validaciones pasan, agregar el ítem
+    await addItem(lista, nombre, sitio);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ítem guardado con éxito')),
+    );
+
+    listController.clear();
+    nameController.clear();
+    setState(() {
+      selectedSite = null;
+    });
   }
 
   @override

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list_app/components/list.dart';
-import 'package:shopping_list_app/services/firebase_serviceList.dart';
-import 'package:shopping_list_app/services/firebase_serviceSite.dart';
-import 'package:shopping_list_app/components/item.dart';
-import 'package:shopping_list_app/components/site.dart';
 import 'package:shopping_list_app/services/firebase_servicesItem.dart';
+import 'package:shopping_list_app/services/firebase_serviceSite.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -16,44 +13,88 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late Future<List<List<Map<String, dynamic>>>> _future;
 
+  // Lista de items predefinidos
+  List<Map<String, dynamic>> predefinedItems = [
+    {
+      "listId": "item1",
+      "name": "Leche",
+      "site": "Supermercado A",
+    },
+    {
+      "listId": "item2",
+      "name": "Pan",
+      "site": "Panaderia B",
+    },
+    {
+      "listId": "item3",
+      "name": "Manzanas",
+      "site": "Frutería C",
+    },
+    {
+      "listId": "item4",
+      "name": "Pasta",
+      "site": "Supermercado A",
+    },
+    {
+      "listId": "item5",
+      "name": "Jabón",
+      "site": "Farmacia D",
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
     _future = _fetchData();
   }
 
+  // Obtener datos de los servicios (simulados)
   Future<List<List<Map<String, dynamic>>>> _fetchData() async {
-    final itemData = await getShoppingItem();
-    final siteData = await getShoppingSite();
-    return [
-      itemData.cast<Map<String, dynamic>>().toList(),
-      siteData.cast<Map<String, dynamic>>().toList(),
-    ];
+    try {
+      final itemData = await getShoppingItem();
+      final siteData = await getShoppingSite();
+      if (itemData == null || siteData == null) {
+        throw Exception("Error al obtener datos.");
+      }
+      return [
+        itemData.cast<Map<String, dynamic>>().toList(),
+        siteData.cast<Map<String, dynamic>>().toList(),
+      ];
+    } catch (e) {
+      throw Exception("Error al obtener datos: $e");
+    }
   }
 
+  // Confirmar eliminación de un item
   Future<void> _confirmDeleteItem(BuildContext context, String itemId) async {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Delete'),
+          title: const Text('Confirmar eliminación'),
           content: const SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Are you sure you want to delete this item?'),
+                Text('¿Estás seguro que quieres eliminar este ítem?'),
               ],
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.teal,
+              ),
+              child: const Text('Cancelar'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: const Text('Delete'),
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text('Eliminar'),
               onPressed: () async {
                 await deleteItem(itemId);
                 setState(() {
@@ -71,38 +112,60 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Future<void> _confirmDeleteSite(BuildContext context, String siteId) async {
-    return showDialog<void>(
+  // Mostrar la lista de items predefinidos en un AlertDialog
+  void _showPredefinedItems(BuildContext context) async {
+    final siteData = await getShoppingSite();
+    final siteNames = siteData.map((site) => site['name'] as String).toList();
+    final itemData = await getShoppingItem();
+    final itemNames = itemData.map((item) => item['name'] as String).toList();
+
+    showDialog(
       context: context,
-      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirm Delete'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: const <Widget>[
-                Text('Are you sure you want to delete this site?'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
+          title: Text("Lista de Items Predefinida"),
+          content: Container(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: predefinedItems.length,
+              itemBuilder: (context, index) {
+                final item = predefinedItems[index];
+                return ListTile(
+                  title: Text(item['name']),
+                  subtitle: Text(item['site']),
+                  onTap: () async {
+                    // Validar que el sitio y el nombre existen antes de agregar el item
+                    if (siteNames.contains(item['site']) && !itemNames.contains(item['name'])) {
+                      await addItem(item['listId'], item['name'], item['site']);
+
+                      // Actualizar la lista mostrada
+                      setState(() {
+                        _future = Future.wait([
+                          getShoppingItem().then((value) => value.cast<Map<String, dynamic>>().toList()),
+                          getShoppingSite().then((value) => value.cast<Map<String, dynamic>>().toList()),
+                        ]);
+                      });
+
+                      Navigator.of(context).pop(); // Cerrar el diálogo
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('El sitio "${item['site']}" no existe o el ítem "${item['name']}" ya está en la lista.')),
+                      );
+                    }
+                  },
+                );
               },
             ),
+          ),
+          actions: [
             TextButton(
-              child: const Text('Delete'),
-              onPressed: () async {
-                await deleteSite(siteId);
-                setState(() {
-                  _future = Future.wait([
-                    getShoppingItem().then((value) => value.cast<Map<String, dynamic>>().toList()),
-                    getShoppingSite().then((value) => value.cast<Map<String, dynamic>>().toList()),
-                  ]);
-                });
-                Navigator.of(context).pop();
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.teal,
+              ),
+              child: Text("Cerrar"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
               },
             ),
           ],
@@ -128,6 +191,10 @@ class _HomeState extends State<Home> {
           } else if (snapshot.hasError) {
             return Center(
               child: Text('Error: ${snapshot.error}'),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(
+              child: Text('No hay datos disponibles'),
             );
           } else {
             final items = snapshot.data![0];
@@ -157,11 +224,6 @@ class _HomeState extends State<Home> {
                           : const Text('No hay ítems')),
                     ),
                     const SizedBox(width: 16.0),
-                    Expanded(
-                      child: _buildSection('Sitios de compra', sites.isNotEmpty
-                          ? SiteList(sites: sites, onDelete: _confirmDeleteSite)
-                          : const Text('No hay sitios')),
-                    ),
                   ],
                 ),
               ),
@@ -172,22 +234,35 @@ class _HomeState extends State<Home> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/addItem');
-            },
-            tooltip: 'Agregar Item',
-            backgroundColor: Colors.teal,
-            child: const Icon(Icons.add_business_rounded),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0), // Padding abajo
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/addItem');
+              },
+              tooltip: 'Agregar Item',
+              backgroundColor: Colors.teal,
+              child: const Icon(Icons.add_business_rounded),
+            ),
           ),
-          const SizedBox(height: 16.0), // Espacio entre botones flotantes
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0), // Padding abajo
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/addSite');
+              },
+              tooltip: 'Agregar Sitio',
+              backgroundColor: Colors.teal,
+              child: const Icon(Icons.luggage_rounded),
+            ),
+          ),
           FloatingActionButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/addSite');
+              _showPredefinedItems(context);
             },
-            tooltip: 'Agregar Sitio',
+            tooltip: 'Mostrar Items Predefinidos',
             backgroundColor: Colors.teal,
-            child: const Icon(Icons.luggage_rounded),
+            child: const Icon(Icons.list),
           ),
         ],
       ),

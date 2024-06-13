@@ -41,10 +41,18 @@ class _EditItemState extends State<EditItem> {
     // Obtener los argumentos de la ruta
     final Map<String, dynamic> arguments = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
+    // Imprimir argumentos para depuración
+    print('Arguments: $arguments');
+
     // Asignar los valores a los controladores si existen en los argumentos
     listController.text = arguments['list'] ?? '';
     nameController.text = arguments['name'] ?? '';
-    selectedSite = arguments['site'] ?? null; // Asignar el sitio seleccionado inicialmente
+    selectedSite = arguments['site'] ?? null;
+
+    final String? uid = arguments['uid'];
+
+    // Imprimir UID para depuración
+    print('UID: $uid');
 
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +63,7 @@ class _EditItemState extends State<EditItem> {
         child: Column(
           children: [
             Hero(
-              tag: 'item_${arguments['uid']}', // Asegúrate de que 'uid' sea único para cada ítem
+              tag: 'item_${arguments['uid']}',
               child: CircleAvatar(
                 child: Icon(Icons.shopping_cart),
               ),
@@ -95,21 +103,36 @@ class _EditItemState extends State<EditItem> {
             const SizedBox(height: 24.0),
             ElevatedButton(
               onPressed: () async {
+                // Validar UID antes de intentar actualizar
+                if (uid == null || uid.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error: UID inválido')),
+                  );
+                  return;
+                }
+
                 // Obtén los valores actualizados de los controladores
                 final String list = listController.text;
                 final String name = nameController.text;
                 final String site = selectedSite ?? '';
 
-                // Obtén el UID del ítem desde los argumentos
-                final String uid = arguments['uid'];
+                try {
+                  // Llama al método updatedItem para actualizar el ítem en Firebase Firestore
+                  await updateItem(uid, list, name, site);
 
-                // Llama al método updatedItem para actualizar el ítem en Firebase Firestore
-                await updateItem(uid, list, name, site);
+                  // Muestra algún mensaje de éxito o realiza otras acciones después de la actualización
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Item actualizado con éxito')),
+                  );
 
-                // Muestra algún mensaje de éxito o realiza otras acciones después de la actualización
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Item actualizado con éxito')),
-                );
+                  // Navegar hacia atrás después de actualizar
+                  Navigator.of(context).pop(true);
+                } catch (e) {
+                  // Manejo de errores
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al actualizar el item: $e')),
+                  );
+                }
               },
               child: const Text("Actualizar"),
             ),

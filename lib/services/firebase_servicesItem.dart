@@ -16,7 +16,7 @@ Future<List<Map<String, dynamic>>> getShoppingItem() async {
       "siteId": data['siteId']
     };
     shoppingItems.add(item);
-    print('Item retrieved: $item'); // Print statement to debug
+
   });
 
   return shoppingItems;

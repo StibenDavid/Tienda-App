@@ -7,8 +7,8 @@ import 'package:shopping_list_app/pages/edit_item.dart';
 import 'package:shopping_list_app/pages/edit_list.dart';
 import 'package:shopping_list_app/pages/edit_site.dart';
 import 'package:shopping_list_app/pages/home_page.dart';
+import 'package:shopping_list_app/pages/auth_page.dart';
 import 'firebase_options.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,11 +23,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return MaterialApp(
       title: 'Material App',
-      initialRoute: '/',
+      initialRoute: '/', 
       routes: {
-        '/': (context) => const Home(),
+        '/': (context) => const AuthPage(), 
+        '/home': (context) => const Home(),
         '/addItem': (context) => const AddItem(),
         '/editItem': (context) => const EditItem(),
         '/addSite': (context) => const AddSite(),
@@ -38,4 +39,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 

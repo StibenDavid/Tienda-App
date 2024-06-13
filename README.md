@@ -1,6 +1,6 @@
-# shopping_list_app
+# App que simula compras 
 
-A new Flutter project.
+Flutter project.
 
 ## Getting Started
 
